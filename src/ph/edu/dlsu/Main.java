@@ -1,8 +1,10 @@
 package ph.edu.dlsu;
 
+import org.opencv.contrib.Contrib;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.VideoCapture;
+import org.opencv.imgproc.Imgproc;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,17 +38,21 @@ public class Main {
 
     private void runMainLoop(String[] args) throws InterruptedException {
         ImageViewer imageProcessor = new ImageViewer();
-        Mat webcamMatImage = new Mat();
+        Mat frame = new Mat();
+        Mat processed = new Mat();
         Image tempImage;
         VideoCapture capture = new VideoCapture("res/Wildlife.wmv");
         if( capture.isOpened()){
             while (true){
-                capture.read(webcamMatImage);
-                if( !webcamMatImage.empty() ){
-                    tempImage= imageProcessor.toBufferedImage(webcamMatImage);
+                capture.read(frame);
+                if( !frame.empty() ){
+
+                    processFrame(frame, processed);
+
+                    tempImage= imageProcessor.toBufferedImage(processed);
                     ImageIcon imageIcon = new ImageIcon(tempImage, "Video playback");
                     imageLabel.setIcon(imageIcon);
-                    frame.pack();  //this will resize the window to fit the image
+                    this.frame.pack();  //this will resize the window to fit the image
                     Thread.sleep(50);
                 }
                 else{
@@ -59,5 +65,10 @@ public class Main {
             System.out.println("Couldn't open video file.");
         }
 
+    }
+
+    private void processFrame(Mat srcImage, Mat outImage){
+        Imgproc.cvtColor(srcImage, outImage, Imgproc.COLOR_BGR2GRAY);
+        Contrib.applyColorMap(outImage, outImage, Contrib.COLORMAP_JET);
     }
 }
